@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:language_learning_app/screens/home_page.dart';
+
+import 'app.dart';
+import 'core/audio/sound_player.dart';
+import 'features/lessons/data/datasources/lesson_local_data_source.dart';
+import 'features/lessons/data/repositories/lesson_repository_impl.dart';
 
 void main() {
-  runApp(LanguageLearningApp());
+  final repository = LessonRepositoryImpl(LessonLocalDataSource());
+  final soundPlayer = AudioplayersSoundPlayer();
+
+  runApp(LanguageLearningApp(
+    repository: repository,
+    soundPlayer: soundPlayer,
+  ));
 }
-
-class LanguageLearningApp extends StatelessWidget {
-  const LanguageLearningApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: HomePage(),
-    );
-  }
-}
-
-
-
