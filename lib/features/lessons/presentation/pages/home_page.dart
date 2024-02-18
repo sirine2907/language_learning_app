@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/audio/sound_player.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../domain/entities/category.dart';
+import '../../domain/repositories/lesson_repository.dart';
+import '../../domain/usecases/get_words.dart';
 import '../bloc/categories/categories_bloc.dart';
+import '../bloc/deck/deck_bloc.dart';
 import '../widgets/category_deck_card.dart';
+import 'deck_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -52,13 +58,26 @@ class HomePage extends StatelessWidget {
                 for (final category in loaded.categories)
                   CategoryDeckCard(
                     category: category,
-                    onTap: () {
-                      // TODO open the deck page
-                    },
+                    onTap: () => _openDeck(context, category),
                   ),
               ],
             );
           },
+        ),
+      ),
+    );
+  }
+
+  void _openDeck(BuildContext context, Category category) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider(
+          create: (_) => DeckBloc(
+            getWords: GetWords(context.read<LessonRepository>()),
+            soundPlayer: context.read<SoundPlayer>(),
+          )..add(DeckStarted(category.id)),
+          child: DeckPage(category: category),
         ),
       ),
     );
