@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/category.dart';
 import '../bloc/deck/deck_bloc.dart';
 import '../widgets/deck_controls.dart';
+import '../widgets/deck_finished_view.dart';
 import '../widgets/flashcard.dart';
 
 class DeckPage extends StatelessWidget {
@@ -28,6 +29,14 @@ class DeckPage extends StatelessWidget {
               return const Center(child: Text('Could not load this deck'));
             }
 
+            if (state.status == DeckStatus.finished) {
+              return DeckFinishedView(
+                category: category,
+                onRestart: () =>
+                    context.read<DeckBloc>().add(const DeckRestarted()),
+              );
+            }
+
             final bloc = context.read<DeckBloc>();
 
             return Center(
@@ -43,6 +52,14 @@ class DeckPage extends StatelessWidget {
                           padding: const EdgeInsets.fromLTRB(12, 20, 12, 16),
                           child: GestureDetector(
                             onTap: () => bloc.add(const CardFlipped()),
+                            onHorizontalDragEnd: (details) {
+                              final speed = details.primaryVelocity ?? 0;
+                              if (speed < -200) {
+                                bloc.add(const NextCardPressed());
+                              } else if (speed > 200) {
+                                bloc.add(const PreviousCardPressed());
+                              }
+                            },
                             child: AnimatedSwitcher(
                               duration: const Duration(milliseconds: 250),
                               child: Flashcard(
@@ -57,7 +74,7 @@ class DeckPage extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'tap the card to see the meaning',
+                        'tap the card to see the meaning · swipe to move',
                         style: Theme.of(context).textTheme.bodySmall!.copyWith(
                               color: AppColors.muted,
                             ),
