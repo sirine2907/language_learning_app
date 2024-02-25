@@ -70,8 +70,8 @@ class Flashcard extends StatelessWidget {
       children: [
         if (word.hasImage) ...[
           Container(
-            width: 150,
-            height: 150,
+            width: 180,
+            height: 180,
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: AppColors.pictureBackground,
