@@ -85,7 +85,7 @@ class Flashcard extends StatelessWidget {
           word.kana,
           textAlign: TextAlign.center,
           // phrases are long so they get a smaller font
-          style: word.hasImage ? textTheme.displaySmall : textTheme.headlineMedium,
+          style: word.hasImage ? textTheme.displaySmall : textTheme.headlineSmall,
         ),
         const SizedBox(height: 10),
         Text(
