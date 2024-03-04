@@ -8,42 +8,32 @@ class AppTheme {
     final base = ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.red,
-        primary: AppColors.red,
-        surface: AppColors.card,
+        seedColor: AppColors.purple,
+        primary: AppColors.purple,
       ),
-      scaffoldBackgroundColor: AppColors.paper,
+      scaffoldBackgroundColor: AppColors.purpleTop,
     );
 
-    // Zen Kaku Gothic for normal text, Shippori Mincho for the big titles.
-    // Both have japanese letters so kana looks right everywhere.
-    final body = GoogleFonts.zenKakuGothicNewTextTheme(base.textTheme).apply(
+    // Plus Jakarta Sans for normal text.
+    // The display styles use Noto Sans JP because they show kanji and kana.
+    final text = GoogleFonts.plusJakartaSansTextTheme(base.textTheme).apply(
       bodyColor: AppColors.ink,
       displayColor: AppColors.ink,
     );
 
+    TextStyle japanese(TextStyle? style) {
+      return GoogleFonts.notoSansJp(
+        textStyle: style,
+        fontWeight: FontWeight.w700,
+      );
+    }
+
     return base.copyWith(
-      textTheme: body.copyWith(
-        displayLarge: GoogleFonts.shipporiMincho(
-          textStyle: body.displayLarge,
-          fontWeight: FontWeight.w700,
-        ),
-        displayMedium: GoogleFonts.shipporiMincho(
-          textStyle: body.displayMedium,
-          fontWeight: FontWeight.w700,
-        ),
-        displaySmall: GoogleFonts.shipporiMincho(
-          textStyle: body.displaySmall,
-          fontWeight: FontWeight.w700,
-        ),
-        headlineMedium: GoogleFonts.shipporiMincho(
-          textStyle: body.headlineMedium,
-          fontWeight: FontWeight.w700,
-        ),
-        headlineSmall: GoogleFonts.shipporiMincho(
-          textStyle: body.headlineSmall,
-          fontWeight: FontWeight.w700,
-        ),
+      textTheme: text.copyWith(
+        displayLarge: japanese(text.displayLarge),
+        displayMedium: japanese(text.displayMedium),
+        displaySmall: japanese(text.displaySmall),
+        headlineSmall: japanese(text.headlineSmall),
       ),
     );
   }
