@@ -18,6 +18,7 @@ void main() {
     stamp: '数',
     color: 0xFFC8892B,
     wordCount: 10,
+    level: 'Basic',
   );
 
   setUp(() {

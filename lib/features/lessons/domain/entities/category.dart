@@ -8,6 +8,8 @@ class Category extends Equatable {
   final String stamp;
   final int color;
   final int wordCount;
+  // Basic or Intermediate
+  final String level;
 
   const Category({
     required this.id,
@@ -16,8 +18,10 @@ class Category extends Equatable {
     required this.stamp,
     required this.color,
     required this.wordCount,
+    required this.level,
   });
 
   @override
-  List<Object?> get props => [id, title, japaneseTitle, stamp, color, wordCount];
+  List<Object?> get props =>
+      [id, title, japaneseTitle, stamp, color, wordCount, level];
 }
