@@ -1,62 +1,43 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/sound_pill.dart';
 import '../../domain/entities/word.dart';
 
 class Flashcard extends StatelessWidget {
   final Word word;
-  final int number;
   final bool isFlipped;
-  final Color accent;
+  final VoidCallback onSound;
 
   const Flashcard({
     super.key,
     required this.word,
-    required this.number,
     required this.isFlipped,
-    required this.accent,
+    required this.onSound,
   });
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(22, 22, 22, 22),
       decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.line),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.shadow,
-            offset: Offset(0, 8),
-            blurRadius: 18,
-          ),
-        ],
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(28),
       ),
-      padding: const EdgeInsets.fromLTRB(22, 18, 22, 26),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
-                number.toString().padLeft(2, '0'),
-                style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                      color: AppColors.muted,
-                      fontWeight: FontWeight.w700,
-                    ),
-              ),
-              const Spacer(),
-              Text(
-                isFlipped ? '裏 · back' : '表 · front',
-                style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                      color: accent,
-                    ),
-              ),
-            ],
+          Text(
+            isFlipped ? 'Meaning' : 'Tap the card to see the meaning',
+            style: textTheme.titleSmall!.copyWith(fontWeight: FontWeight.w700),
           ),
           Expanded(
             child: isFlipped ? _buildBack(context) : _buildFront(context),
           ),
+          Center(child: SoundPill(onPressed: onSound)),
         ],
       ),
     );
@@ -65,75 +46,87 @@ class Flashcard extends StatelessWidget {
   Widget _buildFront(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (word.hasImage) ...[
-          Container(
-            width: 180,
-            height: 180,
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.pictureBackground,
-              borderRadius: BorderRadius.circular(14),
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            if (word.hasImage) ...[
+              Container(
+                width: 160,
+                height: 160,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.purpleSoft,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Image.asset(word.image!, fit: BoxFit.contain),
+              ),
+              const SizedBox(height: 24),
+            ],
+            Text(
+              word.kana,
+              textAlign: TextAlign.center,
+              // phrases are long so they get a smaller font
+              style: word.hasImage
+                  ? textTheme.displaySmall!.copyWith(fontSize: 34)
+                  : textTheme.headlineSmall,
             ),
-            child: Image.asset(word.image!, fit: BoxFit.contain),
-          ),
-          const SizedBox(height: 28),
-        ],
-        Text(
-          word.kana,
-          textAlign: TextAlign.center,
-          // phrases are long so they get a smaller font
-          style: word.hasImage ? textTheme.displaySmall : textTheme.headlineSmall,
+            const SizedBox(height: 8),
+            Text(
+              word.romaji,
+              textAlign: TextAlign.center,
+              style: textTheme.titleSmall!.copyWith(color: AppColors.muted),
+            ),
+          ],
         ),
-        const SizedBox(height: 10),
-        Text(
-          word.romaji,
-          textAlign: TextAlign.center,
-          style: textTheme.titleMedium!.copyWith(
-            color: AppColors.muted,
-            fontStyle: FontStyle.italic,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
   Widget _buildBack(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          '意味 · meaning',
-          style: textTheme.labelLarge!.copyWith(color: AppColors.red),
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.purpleSoft,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '意味 · meaning',
+                style: textTheme.labelMedium!.copyWith(
+                  color: AppColors.purple,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              word.english,
+              textAlign: TextAlign.center,
+              style: textTheme.headlineMedium!.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              word.kana,
+              textAlign: TextAlign.center,
+              style: textTheme.titleMedium,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              word.romaji,
+              textAlign: TextAlign.center,
+              style: textTheme.bodyMedium!.copyWith(color: AppColors.muted),
+            ),
+          ],
         ),
-        const SizedBox(height: 14),
-        Text(
-          word.english,
-          textAlign: TextAlign.center,
-          style: textTheme.displaySmall,
-        ),
-        const SizedBox(height: 22),
-        Container(width: 40, height: 2, color: AppColors.line),
-        const SizedBox(height: 22),
-        Text(
-          word.kana,
-          textAlign: TextAlign.center,
-          style: textTheme.titleMedium,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          word.romaji,
-          textAlign: TextAlign.center,
-          style: textTheme.bodyMedium!.copyWith(
-            color: AppColors.muted,
-            fontStyle: FontStyle.italic,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

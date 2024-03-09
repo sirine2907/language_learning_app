@@ -11,14 +11,13 @@ void main() {
     sound: 'sounds/family_members/mother.wav',
   );
 
-  Widget buildCard(bool isFlipped) {
+  Widget buildCard(bool isFlipped, {VoidCallback? onSound}) {
     return MaterialApp(
       home: Scaffold(
         body: Flashcard(
           word: word,
-          number: 2,
           isFlipped: isFlipped,
-          accent: Colors.green,
+          onSound: onSound ?? () {},
         ),
       ),
     );
@@ -31,7 +30,6 @@ void main() {
     expect(find.text('母 はは'), findsOneWidget);
     expect(find.text('haha'), findsOneWidget);
     expect(find.text('mother'), findsNothing);
-    expect(find.text('02'), findsOneWidget);
   });
 
   testWidgets('back shows the english meaning', (tester) async {
@@ -39,5 +37,13 @@ void main() {
 
     expect(find.text('mother'), findsOneWidget);
     expect(find.text('意味 · meaning'), findsOneWidget);
+  });
+
+  testWidgets('listen button calls onSound', (tester) async {
+    int pressed = 0;
+    await tester.pumpWidget(buildCard(false, onSound: () => pressed++));
+
+    await tester.tap(find.text('listen'));
+    expect(pressed, 1);
   });
 }

@@ -7,7 +7,7 @@ import '../domain/entities/category.dart';
 import '../domain/repositories/lesson_repository.dart';
 import '../domain/usecases/get_words.dart';
 import 'bloc/deck/deck_bloc.dart';
-import 'pages/deck_page.dart';
+import 'pages/flashcards_page.dart';
 
 Future<void> openLesson(BuildContext context, Category category) async {
   // read it before the await, the context can be gone after
@@ -29,7 +29,7 @@ Route<void> flashcardsRoute(BuildContext context, Category category) {
         getWords: GetWords(repository),
         soundPlayer: soundPlayer,
       )..add(DeckStarted(category.id)),
-      child: DeckPage(category: category),
+      child: FlashcardsPage(category: category),
     ),
   );
 }
