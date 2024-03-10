@@ -6,9 +6,11 @@ import '../../../../core/widgets/big_button.dart';
 import '../../../../core/widgets/glass_icon_button.dart';
 import '../../../../core/widgets/lesson_top_bar.dart';
 import '../../../../core/widgets/purple_background.dart';
+import '../../../progress/presentation/bloc/progress_bloc.dart';
+import '../../../progress/presentation/pages/result_page.dart';
 import '../../domain/entities/category.dart';
 import '../bloc/deck/deck_bloc.dart';
-import '../widgets/deck_finished_view.dart';
+import '../lesson_routes.dart';
 import '../widgets/flashcard.dart';
 
 class FlashcardsPage extends StatelessWidget {
@@ -21,7 +23,12 @@ class FlashcardsPage extends StatelessWidget {
     return Scaffold(
       body: PurpleBackground(
         child: SafeArea(
-          child: BlocBuilder<DeckBloc, DeckState>(
+          child: BlocConsumer<DeckBloc, DeckState>(
+            listener: (context, state) {
+              if (state.status == DeckStatus.finished) {
+                _showResult(context, state);
+              }
+            },
             builder: (context, state) {
               if (state.status == DeckStatus.loading) {
                 return const Center(
@@ -39,15 +46,43 @@ class FlashcardsPage extends StatelessWidget {
               }
 
               if (state.status == DeckStatus.finished) {
-                return DeckFinishedView(
-                  category: category,
-                  onRestart: () =>
-                      context.read<DeckBloc>().add(const DeckRestarted()),
-                );
+                // the listener opens the result page
+                return const SizedBox();
               }
 
               return _buildCards(context, state);
             },
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showResult(BuildContext context, DeckState state) {
+    // the day is saved, so the home page needs the new streak
+    context.read<ProgressBloc>().add(const ProgressRequested());
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (resultContext) => ResultPage(
+          title: '${category.title} Cards',
+          subtitle: 'Japanese · Flashcards',
+          stats: [
+            ResultStat(Icons.style_outlined, 'Cards', '${state.words.length}'),
+            ResultStat(
+              Icons.schedule,
+              'Time',
+              ResultPage.formatTime(state.timeSpent),
+            ),
+            const ResultStat(Icons.local_fire_department_outlined, 'Streak', '+1 day'),
+          ],
+          conclusion: 'You went through all ${state.words.length} cards of '
+              '${category.title}. Now take the quiz to see how many words you '
+              'really remember!',
+          onTryAgain: () => Navigator.pushReplacement(
+            resultContext,
+            flashcardsRoute(resultContext, category),
           ),
         ),
       ),

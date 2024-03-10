@@ -5,15 +5,19 @@ import 'package:language_learning_app/features/lessons/domain/entities/word.dart
 import 'package:language_learning_app/features/lessons/domain/repositories/lesson_repository.dart';
 import 'package:language_learning_app/features/lessons/domain/usecases/get_words.dart';
 import 'package:language_learning_app/features/lessons/presentation/bloc/deck/deck_bloc.dart';
+import 'package:language_learning_app/features/progress/domain/usecases/save_result.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockLessonRepository extends Mock implements LessonRepository {}
 
 class MockSoundPlayer extends Mock implements SoundPlayer {}
 
+class MockSaveResult extends Mock implements SaveResult {}
+
 void main() {
   late MockLessonRepository repository;
   late MockSoundPlayer soundPlayer;
+  late MockSaveResult saveResult;
 
   const words = [
     Word(romaji: 'ichi', kana: 'いち', english: 'one', sound: 'one.mp3'),
@@ -25,11 +29,18 @@ void main() {
   setUp(() {
     repository = MockLessonRepository();
     soundPlayer = MockSoundPlayer();
+    saveResult = MockSaveResult();
     when(() => soundPlayer.play(any())).thenAnswer((_) async {});
+    when(() => saveResult(any(), score: any(named: 'score')))
+        .thenAnswer((_) async {});
   });
 
   DeckBloc buildBloc() {
-    return DeckBloc(getWords: GetWords(repository), soundPlayer: soundPlayer);
+    return DeckBloc(
+      getWords: GetWords(repository),
+      soundPlayer: soundPlayer,
+      saveResult: saveResult,
+    );
   }
 
   blocTest<DeckBloc, DeckState>(
@@ -64,11 +75,25 @@ void main() {
   );
 
   blocTest<DeckBloc, DeckState>(
-    'next on the last card finishes the deck',
+    'next on the last card finishes the deck and saves the day',
+    setUp: () {
+      when(() => repository.getWords('numbers')).thenAnswer((_) async => words);
+    },
     build: buildBloc,
-    seed: () => ready.copyWith(index: 1),
-    act: (bloc) => bloc.add(const NextCardPressed()),
-    expect: () => [ready.copyWith(index: 1, status: DeckStatus.finished)],
+    act: (bloc) async {
+      bloc.add(const DeckStarted('numbers'));
+      await Future.delayed(Duration.zero);
+      bloc
+        ..add(const NextCardPressed())
+        ..add(const NextCardPressed());
+    },
+    skip: 3,
+    expect: () => [
+      isA<DeckState>().having((s) => s.status, 'status', DeckStatus.finished),
+    ],
+    verify: (_) {
+      verify(() => saveResult('numbers')).called(1);
+    },
   );
 
   blocTest<DeckBloc, DeckState>(
@@ -105,13 +130,5 @@ void main() {
     verify: (_) {
       verify(() => soundPlayer.play('two.mp3')).called(1);
     },
-  );
-
-  blocTest<DeckBloc, DeckState>(
-    'restart goes back to the first card',
-    build: buildBloc,
-    seed: () => ready.copyWith(index: 1, status: DeckStatus.finished),
-    act: (bloc) => bloc.add(const DeckRestarted()),
-    expect: () => [ready],
   );
 }

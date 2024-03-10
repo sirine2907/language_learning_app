@@ -7,12 +7,15 @@ class DeckState extends Equatable {
   final List<Word> words;
   final int index;
   final bool isFlipped;
+  // only set when the deck is finished
+  final Duration timeSpent;
 
   const DeckState({
     this.status = DeckStatus.loading,
     this.words = const [],
     this.index = 0,
     this.isFlipped = false,
+    this.timeSpent = Duration.zero,
   });
 
   Word get currentWord => words[index];
@@ -26,15 +29,17 @@ class DeckState extends Equatable {
     List<Word>? words,
     int? index,
     bool? isFlipped,
+    Duration? timeSpent,
   }) {
     return DeckState(
       status: status ?? this.status,
       words: words ?? this.words,
       index: index ?? this.index,
       isFlipped: isFlipped ?? this.isFlipped,
+      timeSpent: timeSpent ?? this.timeSpent,
     );
   }
 
   @override
-  List<Object?> get props => [status, words, index, isFlipped];
+  List<Object?> get props => [status, words, index, isFlipped, timeSpent];
 }

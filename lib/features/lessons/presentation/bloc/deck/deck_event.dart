@@ -31,7 +31,3 @@ class CardFlipped extends DeckEvent {
 class SoundPressed extends DeckEvent {
   const SoundPressed();
 }
-
-class DeckRestarted extends DeckEvent {
-  const DeckRestarted();
-}
