@@ -22,9 +22,4 @@ class AppColors {
   static const red = Color(0xFFE5484D);
   static const redSoft = Color(0xFFFDE8E8);
 
-  // old colors, still used by the deck page
-  static const paper = Color(0xFFF3EDE2);
-  static const card = Color(0xFFFBF8F2);
-  static const shadow = Color(0x1F23201C);
-  static const pictureBackground = Color(0xFFFFF6DC);
 }
