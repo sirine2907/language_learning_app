@@ -73,7 +73,8 @@ class QuizPage extends StatelessWidget {
               onClose: () => Navigator.pop(context),
             ),
             Expanded(
-              child: Padding(
+              // the card is only as tall as what is inside it
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
                 child: Container(
                   width: double.infinity,
@@ -82,61 +83,59 @@ class QuizPage extends StatelessWidget {
                     color: AppColors.white,
                     borderRadius: BorderRadius.circular(28),
                   ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Listen and pick the meaning',
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Listen and pick the meaning',
+                        style: textTheme.titleSmall!.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SoundPill(
+                        onPressed: () => bloc.add(const QuizSoundPressed()),
+                      ),
+                      const SizedBox(height: 28),
+                      Center(
+                        child: Text(
+                          question.word.kana,
+                          textAlign: TextAlign.center,
+                          style: question.word.hasImage
+                              ? textTheme.displaySmall!.copyWith(fontSize: 34)
+                              : textTheme.headlineSmall,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Center(
+                        child: Text(
+                          // the romaji shows after answering, so you read the kana first
+                          state.isAnswered ? question.word.romaji : ' ',
                           style: textTheme.titleSmall!.copyWith(
-                            fontWeight: FontWeight.w700,
+                            color: AppColors.muted,
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        SoundPill(
-                          onPressed: () => bloc.add(const QuizSoundPressed()),
-                        ),
-                        const SizedBox(height: 28),
-                        Center(
-                          child: Text(
-                            question.word.kana,
-                            textAlign: TextAlign.center,
-                            style: question.word.hasImage
-                                ? textTheme.displaySmall!.copyWith(fontSize: 34)
-                                : textTheme.headlineSmall,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Center(
-                          child: Text(
-                            // the romaji shows after answering, so you read the kana first
-                            state.isAnswered ? question.word.romaji : ' ',
-                            style: textTheme.titleSmall!.copyWith(
-                              color: AppColors.muted,
+                      ),
+                      const SizedBox(height: 24),
+                      Container(height: 1, color: AppColors.line),
+                      const SizedBox(height: 20),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          for (final option in question.options)
+                            AnswerChip(
+                              text: option,
+                              look: _lookFor(state, option),
+                              onTap: state.isAnswered
+                                  ? null
+                                  : () => bloc.add(AnswerSelected(option)),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Container(height: 1, color: AppColors.line),
-                        const SizedBox(height: 20),
-                        Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: [
-                            for (final option in question.options)
-                              AnswerChip(
-                                text: option,
-                                look: _lookFor(state, option),
-                                onTap: state.isAnswered
-                                    ? null
-                                    : () => bloc.add(AnswerSelected(option)),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 18),
-                        if (state.isAnswered) _buildFeedback(context, state),
-                      ],
-                    ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      if (state.isAnswered) _buildFeedback(context, state),
+                    ],
                   ),
                 ),
               ),
@@ -167,7 +166,9 @@ class QuizPage extends StatelessWidget {
     final isCorrect = state.selected == state.currentQuestion.answer;
 
     return Text(
-      isCorrect ? 'Correct! すごい!' : 'Not this time, it means "${state.currentQuestion.answer}"',
+      isCorrect
+          ? 'Correct! すごい!'
+          : 'Not this time, it means "${state.currentQuestion.answer}"',
       style: Theme.of(context).textTheme.bodyMedium!.copyWith(
             color: isCorrect ? AppColors.green : AppColors.red,
             fontWeight: FontWeight.w700,

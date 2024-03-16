@@ -21,5 +21,4 @@ class AppColors {
   static const greenSoft = Color(0xFFE3F7EC);
   static const red = Color(0xFFE5484D);
   static const redSoft = Color(0xFFFDE8E8);
-
 }
