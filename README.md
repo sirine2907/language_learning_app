@@ -1,8 +1,9 @@
 # Japanese Flashcards 日本語
 
-A small Flutter app I made to learn my first Japanese words. You pick a deck
-(numbers, family members, colors or phrases), go through the cards one by one,
-tap a card to see what it means and press the speaker to hear how it is said.
+A small Flutter app I made to learn my first Japanese words. You pick a lesson
+(numbers, family members, colors or phrases), then you can study the cards or
+take a listening quiz. The app remembers your best score for every lesson and
+the days you practiced, so you can keep a daily streak.
 
 **Live demo:** https://sirine2907.github.io/language_learning_app/
 
@@ -12,22 +13,25 @@ tap a card to see what it means and press the speaker to hear how it is said.
 
 ## Features
 
-- 4 decks: Numbers (10), Family Members (10), Colors (8), Phrases (9)
-- Every card shows the word in Japanese (kanji + kana) and in romaji
-- Tap the card to flip it and see the English meaning
-- Speaker button plays the real pronunciation
-- Swipe left / right or use the arrows to move between cards
-- Progress bar and counter on top, and a "good job" screen at the end of a deck
+- 4 lessons: Numbers (10), Family Members (10), Colors (8), Phrases (9)
+- **Study the cards:** every card shows the word in kanji + kana and romaji,
+  tap it to flip and see the English meaning, press listen to hear it
+- **Quiz:** listen to the word and pick the right meaning out of 4,
+  the answer turns green or red right away
+- **Lesson completed** page with the number of questions, the time and the score
+- **Daily streak** (Mon to Sun) and **progress** cards with the best quiz score of each lesson
+- Everything is saved on the phone with shared_preferences
+- Swipe left / right or use the buttons to move between cards
 
 ## Screenshots
 
-| Decks | Front | Back |
-|---|---|---|
-| ![home](docs/screenshots/home.png) | ![front](docs/screenshots/numbers_front.png) | ![back](docs/screenshots/numbers_back.png) |
+| Home | Choose a mode | Card | Meaning |
+|---|---|---|---|
+| ![home](docs/screenshots/home.png) | ![choose](docs/screenshots/choose_mode.png) | ![front](docs/screenshots/cards_front.png) | ![back](docs/screenshots/cards_back.png) |
 
-| Colors | Phrases | End of deck |
+| Quiz | Wrong answer | Lesson completed |
 |---|---|---|
-| ![colors](docs/screenshots/colors_front.png) | ![phrases](docs/screenshots/phrases_front.png) | ![finished](docs/screenshots/finished.png) |
+| ![quiz](docs/screenshots/quiz_correct.png) | ![wrong](docs/screenshots/quiz_wrong.png) | ![result](docs/screenshots/result.png) |
 
 ## Built with
 
@@ -35,39 +39,47 @@ tap a card to see what it means and press the speaker to hear how it is said.
 - [flutter_bloc](https://pub.dev/packages/flutter_bloc) for state management
 - [equatable](https://pub.dev/packages/equatable) to compare states
 - [audioplayers](https://pub.dev/packages/audioplayers) for the sounds
-- [google_fonts](https://pub.dev/packages/google_fonts) (Shippori Mincho and Zen Kaku Gothic New, both have Japanese letters)
+- [shared_preferences](https://pub.dev/packages/shared_preferences) to save scores and streak days
+- [google_fonts](https://pub.dev/packages/google_fonts) (Plus Jakarta Sans, and Noto Sans JP for the Japanese words)
 - bloc_test and mocktail for the tests
 
 ## How the code is organized
 
-I used clean architecture with one feature called `lessons`.
-The idea is that the UI never knows where the words come from, it only talks to the bloc,
-the bloc uses a use case, and the use case asks the repository.
+I used clean architecture with 3 features. The UI never knows where the data
+comes from, it only talks to a bloc, the bloc uses a use case, and the use case
+asks a repository.
 
 ```
 lib/
-├── main.dart                 creates the repository and the sound player
-├── app.dart                  MaterialApp, theme and providers
+├── main.dart                   creates the repositories and the sound player
+├── app.dart                    MaterialApp, theme and providers
 ├── core/
-│   ├── audio/                SoundPlayer (one AudioPlayer for the whole app)
-│   └── theme/                colors and text styles
-└── features/lessons/
-    ├── domain/               entities (Word, Category), repository interface, use cases
-    ├── data/                 local data source with all the words + repository implementation
-    └── presentation/
-        ├── bloc/categories/  loads the decks for the home page
-        ├── bloc/deck/        current card, flip, next / previous, sound, finished
-        ├── pages/            HomePage, DeckPage
-        └── widgets/          deck card, flashcard, buttons, finished view
+│   ├── audio/                  SoundPlayer (one AudioPlayer for the whole app)
+│   ├── theme/                  colors and text styles
+│   └── widgets/                purple background, top bar, sound button, big button
+└── features/
+    ├── lessons/                the words and the flashcards
+    │   ├── domain/             Word, Category, LessonRepository, GetCategories, GetWords
+    │   ├── data/               local data source with all the words
+    │   └── presentation/       CategoriesBloc, DeckBloc, HomePage, FlashcardsPage
+    ├── quiz/
+    │   ├── domain/             Question, MakeQuiz (builds 4 options for every word)
+    │   └── presentation/       QuizBloc, QuizPage, answer chips
+    └── progress/
+        ├── domain/             Progress (best scores + practice days, streak), GetProgress, SaveResult
+        ├── data/               shared_preferences data source
+        └── presentation/       ProgressBloc, ResultPage
 ```
 
-How a card works:
+How the quiz works:
 
-1. `HomePage` opens `DeckPage` and creates a `DeckBloc` with `DeckStarted(categoryId)`
-2. the bloc calls `GetWords`, which calls `LessonRepository.getWords`
-3. the state has the list of words, the index of the current card and if it is flipped
-4. tapping the card sends `CardFlipped`, the arrows send `NextCardPressed` / `PreviousCardPressed`
-5. after the last card the status becomes `finished` and the page shows the end screen
+1. `QuizPage` is opened with a `QuizBloc` and the event `QuizStarted(categoryId)`
+2. the bloc calls `MakeQuiz`, which takes the words of the lesson and adds 3 wrong
+   meanings from other words of the same lesson to every question
+3. tapping an answer sends `AnswerSelected`, the bloc checks it and counts the right ones
+4. after the last question the bloc calls `SaveResult` with the score, which keeps the
+   best score and saves today for the streak
+5. the page sees the `finished` status and opens the `ResultPage`
 
 ## Run it
 
@@ -92,10 +104,11 @@ flutter run -d chrome
 flutter test
 ```
 
-There are tests for the repository, both blocs and the flashcard widget.
+There are tests for the repositories, the streak, the quiz questions, all the blocs
+and the flashcard widget.
 
 ## What I want to add next
 
-- a quiz mode where you pick the right meaning
-- remember which cards I already know
-- more decks (animals, food, days of the week)
+- a "write what you hear" quiz where you build the answer from words
+- more lessons (animals, food, days of the week)
+- dark mode
